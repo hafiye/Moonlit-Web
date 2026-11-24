@@ -1,0 +1,136 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Gallery from '../components/Gallery.astro';
+import { games } from '../data/games';
+import { site } from '../data/site';
+import logoLight from '../assets/brand/logo-light.png';
+
+const wb = games.find((g) => g.slug === 'witchs-binder')!;
+---
+<Base title="Press kit" description="Facts, logos, screenshots and the trailer for Moonlit Studios and Witch's Binder.">
+  <section>
+    <div class="wrap">
+      <span class="eyebrow">Press kit</span>
+      <h1>Press &amp; creators</h1>
+      <p class="muted intro">
+        Everything here is free to use in coverage, videos and streams of Witch's Binder.
+        {site.email ? <>For keys or questions, write to <a href={`mailto:${site.email}`}>{site.email}</a>.</> : null}
+      </p>
+
+      <div class="kit">
+        <article class="sheet">
+          <h2>Witch's Binder</h2>
+          <dl>
+            <div><dt>Developer</dt><dd>Moonlit Studios</dd></div>
+            <div><dt>Release</dt><dd>Coming soon (demo out now)</dd></div>
+            <div><dt>Platforms</dt><dd>{wb.platforms.join(', ')} (Steam)</dd></div>
+            <div><dt>Genre</dt><dd>Casual, cozy puzzle</dd></div>
+            <div><dt>Steam</dt><dd><a href={wb.steamUrl} target="_blank" rel="noopener">store.steampowered.com/app/5558400</a></dd></div>
+          </dl>
+          <h3>Short description</h3>
+          <p>{wb.short}</p>
+          <h3>Key features</h3>
+          <ul>
+            <li>Forty real public-domain books: grimoires, herbals, dream books, star lore, alchemy, folklore and more.</li>
+            <li>Sort pages by paper, size, borders, ink and lettering, then bind each book by hand.</li>
+            <li>No timers, no scores, no rush.</li>
+            <li>Mouse, keyboard or controller, with a wide set of accessibility options.</li>
+          </ul>
+        </article>
+
+        <aside class="downloads">
+          <h2>Downloads</h2>
+          <ul class="files">
+            <li><a href="/press/witchs-binder-press-kit.zip" download>Everything (zip)</a><span>logos, capsules, screenshots</span></li>
+            <li><a href="/video/witchs-binder-trailer.mp4" download>Trailer (mp4)</a><span>1080p, ~47 MB</span></li>
+            <li><a href="/press/witchs-binder/witchs-binder-logo-transparent.png" download>Game logo</a><span>transparent PNG</span></li>
+            <li><a href="/press/witchs-binder/witchs-binder-capsule-920x430.png" download>Capsule art</a><span>920×430</span></li>
+            <li><a href="/press/witchs-binder/witchs-binder-capsule-600x900.png" download>Vertical capsule</a><span>600×900</span></li>
+          </ul>
+
+          <h3>Studio logo</h3>
+          <div class="logo-tile">
+            <Image src={logoLight} alt="Moonlit Studios logo" width={360} />
+          </div>
+          <ul class="files">
+            <li><a href="/press/moonlit/moonlit-logo-light.png" download>Logo, light</a><span>PNG for dark backgrounds</span></li>
+            <li><a href="/press/moonlit/moonlit-logo-dark.png" download>Logo, dark</a><span>PNG for light backgrounds</span></li>
+            <li><a href="/press/moonlit/moonlit-moon-light.svg" download>Moon mark, light</a><span>SVG</span></li>
+            <li><a href="/press/moonlit/moonlit-moon-dark.svg" download>Moon mark, dark</a><span>SVG</span></li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="shots" aria-labelledby="press-shots">
+    <div class="wrap">
+      <div class="section-head"><h2 id="press-shots">Screenshots</h2></div>
+      <p class="muted">Click to view; full-size 1920×1080 JPGs are in the zip above.</p>
+      <Gallery shots={wb.screenshots} />
+    </div>
+  </section>
+
+  <section aria-labelledby="press-studio">
+    <div class="wrap studio">
+      <div class="section-head"><h2 id="press-studio">About Moonlit Studios</h2></div>
+      <p>
+        Moonlit Studios is a tiny indie studio run by Nian and Eser. Nian makes the games on her own, after years
+        of working on team projects, while Eser handles everything else. Witch's Binder is
+        the studio's first game, with music and sound design by Emre Akdeniz.
+      </p>
+      {site.socials.length > 0 && (
+        <ul class="socials">
+          {site.socials.map((s) => <li><a class="btn" href={s.url} target="_blank" rel="noopener">{s.label}</a></li>)}
+        </ul>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .intro { font-size: 1.1rem; max-width: 60ch; margin-bottom: 2.5rem; }
+  .kit { display: grid; grid-template-columns: 1.4fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); align-items: start; }
+  @media (max-width: 900px) { .kit { grid-template-columns: 1fr; } }
+
+  .sheet, .downloads {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+  .sheet h3, .downloads h3 { margin-top: 1.8rem; font-size: 1.5rem; }
+  dl { display: grid; gap: 0.6rem; margin: 0; }
+  dl div { display: grid; grid-template-columns: 110px 1fr; gap: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); }
+  dt { font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); padding-top: 0.25rem; }
+  dd { margin: 0; overflow-wrap: anywhere; }
+  .sheet ul { padding-left: 1.2rem; }
+  .sheet li { margin-bottom: 0.4rem; }
+  .sheet li::marker { color: var(--accent); }
+
+  .files { list-style: none; margin: 0; padding: 0; }
+  .files li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .files span { color: var(--muted); font-size: 0.88rem; }
+  .logo-tile {
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    border-radius: 8px;
+    background: var(--charcoal);
+    margin-bottom: 0.5rem;
+  }
+  .logo-tile img { width: min(260px, 100%); height: auto; }
+
+  .shots .muted { margin-top: -1rem; margin-bottom: 1.5rem; }
+  .studio p { max-width: 65ch; }
+  .socials { list-style: none; padding: 0; margin: 1.5rem 0 0; display: flex; flex-wrap: wrap; gap: 0.75rem; }
+</style>

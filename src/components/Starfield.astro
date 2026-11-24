@@ -1,0 +1,105 @@
+---
+// Twinkling stars behind every page, below the hero. They are scattered only
+// in the empty space: anything with text, images or buttons is kept clear,
+// so reading is never harder.
+---
+<div class="starfield" aria-hidden="true"></div>
+
+<script>
+  const field = document.querySelector<HTMLElement>('.starfield');
+
+  // Everything the stars must stay away from
+  const BLOCKS = [
+    'main :is(h1, h2, h3, h4, p, ul, ol, dl, figure, img, picture, video, blockquote, pre, table, form)',
+    'main :is(.btn, .btn-row, .card, .game-card, .panel, .gallery, .section-head, .eyebrow, .duo)',
+    'main :is(.parchment, .desk)',
+    '.site-footer .inner',
+  ].join(', ');
+  const PAD = 28; // breathing room around each block, in px
+
+  // Same stars on every visit to a page: seed from the path
+  let seed = [...location.pathname].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 233280, 7);
+  const rand = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+
+  function build() {
+    if (!field) return;
+    const startSeed = seed;
+    field.replaceChildren();
+    const doc = document.documentElement;
+    const W = doc.clientWidth;
+    const H = doc.scrollHeight;
+    field.style.height = `${H}px`;
+
+    // Start below the hero (it has its own sky) or below the header
+    const hero = document.querySelector('.hero');
+    const header = document.querySelector('.site-header');
+    const top = hero ? hero.getBoundingClientRect().bottom + scrollY : (header?.getBoundingClientRect().height ?? 0);
+
+    const rects = [...document.querySelectorAll(BLOCKS)].map((el) => {
+      const r = el.getBoundingClientRect();
+      return { l: r.left - PAD, r: r.right + PAD, t: r.top + scrollY - PAD, b: r.bottom + scrollY + PAD };
+    }).filter((r) => r.r > r.l && r.b > r.t);
+    const clear = (x: number, y: number) => !rects.some((r) => x > r.l && x < r.r && y > r.t && y < r.b);
+
+    const want = Math.min(160, Math.round((W * (H - top)) / 24000));
+    const frag = document.createDocumentFragment();
+    let placed = 0;
+    for (let tries = 0; placed < want && tries < want * 8; tries++) {
+      const x = 6 + rand() * (W - 12);
+      const y = top + 6 + rand() * (H - top - 12);
+      const z = rand() > 0.82 ? 3 : 2;
+      const d = (rand() * 5).toFixed(2);
+      const t = (3 + rand() * 4).toFixed(2);
+      if (!clear(x, y)) continue;
+      const s = document.createElement('span');
+      s.style.cssText = `left:${x.toFixed(0)}px;top:${y.toFixed(0)}px;--z:${z}px;--d:${d}s;--t:${t}s`;
+      frag.append(s);
+      placed++;
+    }
+    field.append(frag);
+    seed = startSeed; // rebuilding (after a resize) keeps the same sequence
+  }
+
+  // Rebuild when the layout settles or changes size (images loading, resizing)
+  let timer = 0;
+  let lastW = 0;
+  let lastH = 0;
+  const schedule = () => {
+    const w = document.documentElement.clientWidth;
+    const h = document.documentElement.scrollHeight;
+    if (w === lastW && Math.abs(h - lastH) < 4) return;
+    lastW = w;
+    lastH = h;
+    clearTimeout(timer);
+    timer = window.setTimeout(build, 200);
+  };
+  new ResizeObserver(schedule).observe(document.body);
+  addEventListener('load', schedule);
+  document.fonts?.ready.then(schedule);
+</script>
+
+<style is:global>
+  body { position: relative; }
+  .starfield {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .starfield span {
+    position: absolute;
+    width: var(--z);
+    height: var(--z);
+    border-radius: 50%;
+    background: var(--text);
+    opacity: 0.08;
+    animation: star-twinkle var(--t) ease-in-out var(--d) infinite;
+  }
+  @keyframes star-twinkle { 0%, 100% { opacity: 0.08; } 50% { opacity: 0.6; } }
+  @media (prefers-reduced-motion: reduce) {
+    .starfield span { opacity: 0.3; }
+  }
+</style>

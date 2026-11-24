@@ -1,0 +1,81 @@
+---
+// The full Moonlit Studios logo (moon + "Moonlit" + "studios"), laid out like the
+// official logo PNG in an 870 x 500 box. Text stays live so it can be animated.
+// animate: plays the hand-drawn intro (moon sketches itself, then the name writes in).
+import { moonOutline, moonEtchings } from '../data/moon';
+
+interface Props {
+  class?: string;
+  animate?: boolean;
+  sub?: boolean; // show "studios"
+}
+const { class: className, animate = false, sub = true } = Astro.props;
+
+// Fits the 2429 x 2643 moon drawing into the logo box.
+const moon = { x: -19.64, y: -8.64, s: 0.1983 };
+---
+<svg
+  class:list={['lockup', className, { animate }]}
+  viewBox="0 0 870 500"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+>
+  <!-- Two layers so a page can move them separately (hero parallax) -->
+  <g class="moon-layer">
+    <g
+      class="moon"
+      transform={`translate(${moon.x} ${moon.y}) scale(${moon.s})`}
+      fill="none"
+      stroke="currentColor"
+      stroke-linecap="round"
+    >
+      <path class="outline" d={moonOutline} stroke-width="51" pathLength="1" />
+      <g stroke-width="18.3">
+        {moonEtchings.map((d, i) => <path class="etch" d={d} pathLength="1" style={`--i:${i}`} />)}
+      </g>
+    </g>
+  </g>
+  <g class="text-layer">
+    <text class="name" x="335" y="311" textLength="521" lengthAdjust="spacingAndGlyphs">Moonlit</text>
+    {sub && (
+      <text class="sub" x="511" y="391" textLength="344" lengthAdjust="spacing">studios</text>
+    )}
+  </g>
+</svg>
+
+<style>
+  .lockup { display: block; width: 100%; height: auto; overflow: visible; color: var(--text); }
+  .name { font-family: var(--font-display); font-size: 318px; fill: currentColor; }
+  .sub { font-family: var(--font-logo); font-weight: 300; font-size: 80px; fill: var(--muted); }
+
+  /* Intro: the moon's outline is drawn at an even pace, then (once it has
+     closed) the etching is hatched in, top to bottom, while the name is written. */
+  .animate .outline {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 1.7s cubic-bezier(0.3, 0.15, 0.6, 0.95) 0.1s forwards;
+  }
+  .animate .etch {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 0.3s ease-out forwards;
+    animation-delay: calc(1.75s + var(--i) * 0.022s);
+  }
+  .animate .name {
+    clip-path: inset(-20% 100% -20% 0);
+    animation: write 1.1s cubic-bezier(0.45, 0, 0.2, 1) 1.9s forwards;
+  }
+  .animate .sub {
+    opacity: 0;
+    animation: rise 0.9s ease-out 2.8s forwards;
+  }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes write { to { clip-path: inset(-20% -5% -20% 0); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate .outline, .animate .etch { stroke-dashoffset: 0; }
+    .animate .name { clip-path: none; }
+    .animate .sub { opacity: 1; }
+  }
+</style>

@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import MoonMark from '../components/MoonMark.astro';
+---
+<Base title="Page not found">
+  <section>
+    <div class="wrap lost">
+      <span class="moon"><MoonMark /></span>
+      <h1>This page got scattered</h1>
+      <p class="muted">Like a page from the witch's library, it isn't where it should be.</p>
+      <a class="btn btn-primary" href="/">Back home</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost { text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .moon { width: 120px; color: var(--muted); margin-bottom: 2rem; transform: rotate(-18deg); }
+</style>

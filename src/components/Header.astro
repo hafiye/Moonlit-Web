@@ -1,0 +1,176 @@
+---
+import Lockup from './Lockup.astro';
+import { games } from '../data/games';
+
+const links = [
+  { href: '/devlog/', label: 'Devlog', match: '/devlog' },
+  { href: '/press/', label: 'Press kit', match: '/press' },
+];
+const path = Astro.url.pathname;
+const inGames = path.startsWith('/games');
+---
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="brand" href="/" aria-label="Moonlit Studios, home">
+      <Lockup />
+    </a>
+    <nav aria-label="Main">
+      <ul>
+        <li class="has-menu">
+          <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="games-menu" data-current={inGames ? '' : undefined}>
+            Games
+            <svg class="caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+          <ul class="menu" id="games-menu" hidden>
+            {games.map((g) => {
+              const href = `/games/${g.slug}/`;
+              return (
+                <li><a href={href} aria-current={path.startsWith(href) ? 'page' : undefined}>{g.name}</a></li>
+              );
+            })}
+          </ul>
+        </li>
+        {links.map((l) => (
+          <li>
+            <a href={l.href} aria-current={path.startsWith(l.match) ? 'page' : undefined}>{l.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const menu = document.getElementById('games-menu');
+  if (toggle && menu) {
+    const set = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      menu.hidden = !open;
+    };
+    toggle.addEventListener('click', () => set(menu.hidden));
+    document.addEventListener('click', (e) => {
+      if (!menu.hidden && !toggle.parentElement!.contains(e.target as Node)) set(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) { set(false); toggle.focus(); }
+    });
+    // Close when keyboard focus leaves the menu
+    toggle.parentElement!.addEventListener('focusout', (e) => {
+      if (!toggle.parentElement!.contains(e.relatedTarget as Node)) set(false);
+    });
+  }
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(29, 29, 30, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 68px;
+  }
+  .brand {
+    display: block;
+    width: 116px;
+    padding: 5px 0;
+    color: var(--text);
+    text-decoration: none;
+  }
+  nav > ul {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.9rem, 3vw, 2rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  nav > ul > li > a,
+  .menu-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    color: var(--muted);
+    text-decoration: none;
+    font: inherit;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.5rem 0;
+    transition: color 0.2s;
+  }
+  .menu-toggle {
+    gap: 0.4em;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .caret { width: 0.65em; height: 0.4em; transition: rotate 0.2s; }
+  .menu-toggle[aria-expanded='true'] .caret { rotate: 180deg; }
+  nav > ul > li > a[aria-current='page'],
+  .menu-toggle[data-current],
+  .menu-toggle[aria-expanded='true'] { color: var(--text); }
+  nav > ul > li > a:hover,
+  .menu-toggle:hover { color: var(--accent); }
+  nav > ul > li > a[aria-current='page']::after,
+  .menu-toggle[data-current]::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.15rem;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* The games dropdown */
+  .has-menu { position: relative; }
+  .menu {
+    position: absolute;
+    top: calc(100% + 0.7rem);
+    left: 50%;
+    translate: -50% 0;
+    min-width: 13rem;
+    margin: 0;
+    padding: 0.4rem;
+    list-style: none;
+    background: var(--bg-raised);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    border-radius: var(--radius);
+    box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.7);
+    animation: drop 0.18s ease-out;
+  }
+  .menu[hidden] { display: none; }
+  .menu a {
+    display: block;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 1rem;
+    white-space: nowrap;
+    transition: color 0.2s, background 0.2s;
+  }
+  .menu a:hover { color: var(--accent); background: rgba(234, 234, 234, 0.04); }
+  .menu a[aria-current='page'] { color: var(--accent); }
+  @keyframes drop { from { opacity: 0; transform: translateY(-4px); } }
+  @media (prefers-reduced-motion: reduce) { .menu { animation: none; } }
+
+  @media (max-width: 420px) {
+    .brand { width: 80px; }
+    nav > ul { gap: 0.85rem; }
+    nav > ul > li > a, .menu-toggle { font-size: 0.8rem; letter-spacing: 0.04em; }
+    /* keep the dropdown on screen on small phones */
+    .menu { left: auto; right: -4.5rem; translate: none; }
+  }
+</style>

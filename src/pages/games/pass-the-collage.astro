@@ -1,0 +1,264 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Gallery from '../../components/Gallery.astro';
+import DevlogList from '../../components/DevlogList.astro';
+import { games } from '../../data/games';
+import { site } from '../../data/site';
+import wood from '../../assets/pass-the-collage/desk-wood.jpg';
+import deskLeft from '../../assets/pass-the-collage/desk-left.jpg';
+import deskRight from '../../assets/pass-the-collage/desk-right.jpg';
+
+const game = games.find((g) => g.slug === 'pass-the-collage')!;
+const bg = await getImage({ src: wood, width: 1700, format: 'webp' });
+const posts = (await getCollection('devlog', ({ data }) => !data.draft && data.game === game.slug))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const insta = site.socials.find((s) => s.label === 'Instagram');
+---
+<Base title={game.name} description={game.short} image="/press/pass-the-collage/screenshot-1.jpg">
+  <section class="desk" style={`--desk: url(${bg.src})`}>
+    <!-- The dancer, moth and scissors from the Steam art, pulled in close to the logo -->
+    <Image class="prop prop-left" src={deskLeft} alt="" widths={[400, 700]} sizes="420px" loading="eager" />
+    <Image class="prop prop-right" src={deskRight} alt="" widths={[440, 800]} sizes="480px" loading="eager" />
+    <div class="wrap desk-inner">
+      <h1 class="visually-hidden">{game.name}</h1>
+      <Image src={game.title} alt="" widths={[420, 640, 1000]} sizes="(max-width: 760px) 86vw, 560px" class="title-art" loading="eager" />
+      <p class="slip">{game.short}</p>
+      <div class="btn-row center">
+        {game.steamUrl
+          ? <a class="btn btn-teal" href={game.steamUrl} target="_blank" rel="noopener">Wishlist on Steam</a>
+          : <span class="ticket">{game.status} to Steam</span>}
+      </div>
+      {game.platforms.length > 0 && <p class="facts">{game.platforms.join(', ')}</p>}
+    </div>
+  </section>
+
+  <section class="about">
+    <div class="wrap prose-grid">
+      <div class="col">
+        <h2>A collage table stocked by real museums</h2>
+        <p>
+          Every image in Pass the Collage, from the wooden desk to the smallest button, comes from the Smithsonian
+          Open Access collections: botanical prints, portrait miniatures, wallpaper samples, mineral specimens,
+          paper dolls and hundreds more.
+        </p>
+
+        <h3>Make anything</h3>
+        <p>
+          Cut, scale, rotate, flip and recolor more than 400 archival images. Layer them with quotes from poets and
+          writers, or your own words in dozens of fonts. When you're done, export your collage in high resolution
+          or share it straight to Steam.
+        </p>
+
+        <h3>A new theme every day</h3>
+        <p>
+          Each day, every player gets the same theme and the same small set of pieces. See what you can make with
+          28 images and 5 quotes, share it with the community and see what everyone else made.
+        </p>
+
+        <h3>Send a theme into the void</h3>
+        <p>
+          Write a theme on a slip of paper and send it out. Somewhere, a stranger picks it up, makes a collage for it
+          and sends it back to you in an envelope. Or open your mailbox, choose someone else's theme and make
+          something for them. No chat, no names, just your seal on the envelope.
+        </p>
+
+        <h3>Choose your seal</h3>
+        <p>
+          Pick yourself a seal from the Seal Archive. It is stamped on every envelope you send, and it is the only way
+          other players will know you. Unlock more as you play.
+        </p>
+
+        <h3>Every piece has a story</h3>
+        <p>Click any image to open its info card: what it is, who made it, when, and which museum keeps it.</p>
+      </div>
+
+      <aside class="col side">
+        <div class="panel">
+          <h3>Features</h3>
+          <ul>
+            <li>400+ public-domain images curated from real museums and archives</li>
+            <li>Free mode with square, portrait and landscape canvases</li>
+            <li>Daily mode: one theme, one set of pieces, for everyone</li>
+            <li>Letter mode: send themes to strangers and receive collages back</li>
+            <li>Scale, rotate, flip, recolor and layer everything</li>
+            <li>High-resolution PNG export and Steam sharing</li>
+            <li>An info card for every image</li>
+            <li>Original music by Emre Akdeniz</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Where the pieces come from</h3>
+          <p>
+            All images come from the Smithsonian Open Access collections and are released under CC0. Pass the
+            Collage is not affiliated with or endorsed by the Smithsonian Institution.
+          </p>
+          <p>
+            These images come from museum collections spanning many centuries and cultures. We chose each one with
+            care, but we may have missed something. If an image feels hurtful or out of place to you, please
+            {site.email ? <a href={`mailto:${site.email}`}>let us know</a> : 'let us know'} and we'll review it.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="shots" aria-labelledby="shots-title">
+    <div class="wrap">
+      <div class="section-head"><h2 id="shots-title">Screenshots</h2></div>
+      <Gallery shots={game.screenshots} />
+    </div>
+  </section>
+
+  <section class="credits" aria-labelledby="credits-title">
+    <div class="wrap">
+      <div class="section-head"><h2 id="credits-title">Made by</h2></div>
+      <dl>
+        <div><dt>A game by</dt><dd>Nian</dd></div>
+        <div><dt>Music &amp; sound design</dt><dd>Emre Akdeniz</dd></div>
+        <div><dt>Testing</dt><dd>Eser Kaya</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  {posts.length > 0 && (
+    <section aria-labelledby="pc-devlog">
+      <div class="wrap">
+        <div class="section-head"><h2 id="pc-devlog">Devlog</h2></div>
+        <DevlogList posts={posts} />
+      </div>
+    </section>
+  )}
+
+  <section class="cta">
+    <div class="wrap cta-inner">
+      <h2>Pull up a chair at the collage table</h2>
+      {game.steamUrl ? (
+        <>
+          <p class="muted">Wishlisting on Steam is the best way to support a tiny studio.</p>
+          <div class="btn-row center">
+            <a class="btn btn-primary" href={game.steamUrl} target="_blank" rel="noopener">Wishlist on Steam</a>
+          </div>
+        </>
+      ) : (
+        <>
+          <p class="muted">The Steam page is on its way. Until then, follow along.</p>
+          <div class="btn-row center">
+            <a class="btn btn-primary" href="/devlog/">Read the devlog</a>
+            {insta && <a class="btn" href={insta.url} target="_blank" rel="noopener">Instagram</a>}
+          </div>
+        </>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* The game's own look: a wooden desk, cream paper, a pink ticket, teal tape */
+  .desk {
+    --paper: #ece4d4;
+    --ink: #2f2a27;
+    --teal: #2f6f73;
+    --ticket: #e8838a;
+    background: #5a2414 var(--desk) center / cover no-repeat;
+    padding: clamp(48px, 8vw, 100px) 0 clamp(44px, 7vw, 80px);
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+    /* height of the side props; they scale with the window */
+    --prop-h: clamp(320px, 36vw, 540px);
+  }
+  .desk-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
+  /* The slices are cut from the same desk photo; their edges fade into the wood behind */
+  .desk :global(.prop) {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    height: var(--prop-h);
+    width: auto;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent),
+      linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent),
+      linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+    mask-composite: intersect;
+  }
+  /* the dancer ends just left of the logo; the moth starts just right of it */
+  .desk :global(.prop-left) { right: calc(50% + 230px); }
+  .desk :global(.prop-right) { left: calc(50% + 245px); }
+  /* mid-size windows: pin the props to the edges and shrink the logo a little so nothing is hidden */
+  @media (max-width: 1180px) {
+    .desk { --prop-h: 300px; }
+    .desk :global(.prop-left) { right: auto; left: -20px; }
+    .desk :global(.prop-right) { left: auto; right: -20px; }
+    .desk :global(.title-art) { width: min(560px, 50vw); }
+  }
+  @media (max-width: 760px) {
+    .desk :global(.prop) { display: none; }
+    .desk :global(.title-art) { width: min(560px, 86%); }
+  }
+  .title-art { width: min(560px, 86%); height: auto; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35)); }
+  .slip {
+    max-width: 52ch;
+    margin: 1.6rem auto 1.8rem;
+    padding: 1.1rem 1.4rem;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 1.08rem;
+    line-height: 1.55;
+    rotate: -0.8deg;
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.55);
+  }
+  .center { justify-content: center; }
+  .btn-teal { background: var(--teal); border-color: var(--teal); color: #f4efe6; }
+  .btn-teal:hover { background: #3a8388; border-color: #3a8388; color: #fff; }
+  .ticket {
+    display: inline-block;
+    padding: 0.55rem 1.3rem;
+    background: var(--ticket);
+    color: #4a1f22;
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    rotate: 1.2deg;
+    box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.6);
+  }
+  .facts { margin: 1.2rem 0 0; font-size: 0.82rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--paper); }
+
+  .prose-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+  }
+  .col h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); }
+  .col h3 { margin-top: 1.8rem; }
+  .col ul { padding-left: 1.2rem; margin: 0 0 1em; }
+  .col li { margin-bottom: 0.5rem; }
+  .col li::marker { color: var(--accent); }
+  .side { display: grid; gap: 1rem; }
+  .panel {
+    padding: 1.4rem 1.5rem 0.6rem;
+    background: var(--bg-raised);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    border-radius: var(--radius);
+    font-size: 1rem;
+  }
+  .panel h3 { margin-top: 0; font-size: 1.2rem; }
+  @media (max-width: 860px) { .prose-grid { grid-template-columns: 1fr; } }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 0;
+  }
+  dl div { border-left: 1px solid var(--accent); padding-left: 1rem; }
+  dt { font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  dd { margin: 0.2rem 0 0; font-size: 1.25rem; font-weight: 500; line-height: 1.3; }
+
+  .cta-inner { text-align: center; }
+</style>

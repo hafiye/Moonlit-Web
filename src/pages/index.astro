@@ -1,0 +1,356 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Lockup from '../components/Lockup.astro';
+import duo from '../assets/team/duo.png';
+import DevlogList from '../components/DevlogList.astro';
+import { games } from '../data/games';
+import { site } from '../data/site';
+
+const wb = games[0];
+const posts = (await getCollection('devlog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+// A small fixed sky for the hero: position, twinkle delay/length, size.
+// Seeded so the stars sit in the same place on every build.
+let seed = 7;
+const rand = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+const stars = Array.from({ length: 64 }, () => ({
+  x: +(rand() * 100).toFixed(1),
+  y: +(rand() * 100).toFixed(1),
+  d: +(rand() * 5).toFixed(2),
+  t: +(3 + rand() * 4).toFixed(2),
+  z: rand() > 0.8 ? 3 : 2,
+  k: +(0.2 + rand() * 0.8).toFixed(2), // depth: 1 = closest, moves most with the mouse
+}));
+---
+<Base>
+  <section class="hero">
+    <div class="sky" aria-hidden="true">
+      {stars.map((s) => (
+        <span style={`left:${s.x}%;top:${s.y}%;--d:${s.d}s;--t:${s.t}s;--z:${s.z}px;--k:${s.k}`}></span>
+      ))}
+    </div>
+    <div class="wrap hero-inner">
+      <h1 class="visually-hidden">Moonlit Studios</h1>
+      <div class="hero-logo">
+        <span class="glow" aria-hidden="true"></span>
+        <Lockup animate />
+      </div>
+      <p class="tagline">{site.tagline}</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href={`/games/${wb.slug}/`}>Meet Witch's Binder</a>
+        <a class="btn" href="/devlog/">Read the devlog</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured" aria-labelledby="featured-title">
+    <div class="wrap">
+      <div class="section-head"><h2 id="featured-title">Our games</h2></div>
+      <div class="game-list">
+        {games.map((g) => (
+          <article class="game-card">
+            <a class="shot" href={`/games/${g.slug}/`} tabindex="-1" aria-hidden="true">
+              <Image src={g.capsule} alt="" widths={[640, 960, 1232]} sizes="(max-width: 860px) 100vw, 60vw" />
+            </a>
+            <div class="info">
+              <span class="eyebrow">{g.status}</span>
+              <h3><a href={`/games/${g.slug}/`}>{g.name}</a></h3>
+              <p>{g.short}</p>
+              {g.platforms.length > 0 && <p class="muted small">{g.platforms.join(' · ')} on Steam</p>}
+              <div class="btn-row">
+                {g.steamUrl
+                  ? <a class="btn btn-primary" href={g.steamUrl} target="_blank" rel="noopener">Wishlist on Steam</a>
+                  : <a class="btn btn-primary" href={`/games/${g.slug}/`}>See the game</a>}
+                {g.demoUrl && <a class="btn" href={g.demoUrl} target="_blank" rel="noopener">Play the free demo</a>}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {posts.length > 0 && (
+    <section aria-labelledby="devlog-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="devlog-title">From the devlog</h2>
+          <a href="/devlog/">All posts →</a>
+        </div>
+        <DevlogList posts={posts} />
+      </div>
+    </section>
+  )}
+
+  <section class="about" aria-labelledby="about-title">
+    <div class="wrap">
+    <div class="section-head"><h2 id="about-title">The studio</h2></div>
+    <div class="about-inner">
+      <p class="about-line">A tiny studio, working by moonlight</p>
+      <!-- Photo cut out of its background, with hand-drawn arrows to each of us.
+           Everything is laid out in a 1000 x 1271 box: a 260-unit band on top for
+           the labels, then the photo (1000 x 1011). -->
+      <figure class="duo">
+        <Image
+          class="duo-photo"
+          src={duo}
+          widths={[480, 760, 1000]}
+          sizes="(max-width: 760px) 100vw, 620px"
+          alt="Nian and Eser smiling side by side"
+        />
+        <svg class="arrows" viewBox="0 0 1000 1271" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+          <g class="arrow">
+            <path d="M108 200 C 92 280, 160 400, 262 452" pathLength="1" />
+            <path d="M246 428 L 262 452 L 233 454" pathLength="1" />
+          </g>
+          <g class="arrow">
+            <path d="M880 162 C 886 216, 852 256, 800 272" pathLength="1" />
+            <path d="M828 279 L 800 272 L 818 250" pathLength="1" />
+          </g>
+        </svg>
+        <figcaption>
+          <span class="label nian"><span class="who">Nian</span> <span class="role">makes games</span></span>
+          <span class="label eser"><span class="who">Eser</span> <span class="role">handles everything else</span></span>
+        </figcaption>
+      </figure>
+    </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const hero = document.querySelector<HTMLElement>('.hero');
+  const sky = hero?.querySelector<HTMLElement>('.sky');
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Mouse depth: ease the hero layers toward the pointer position.
+  if (hero && !calm && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    let tx = 0, ty = 0, x = 0, y = 0, running = false;
+    const step = () => {
+      x += (tx - x) * 0.07;
+      y += (ty - y) * 0.07;
+      hero.style.setProperty('--mx', x.toFixed(4));
+      hero.style.setProperty('--my', y.toFixed(4));
+      if (Math.abs(tx - x) > 0.001 || Math.abs(ty - y) > 0.001) requestAnimationFrame(step);
+      else running = false;
+    };
+    const aim = (nx: number, ny: number) => {
+      tx = nx;
+      ty = ny;
+      if (!running) { running = true; requestAnimationFrame(step); }
+    };
+    addEventListener('pointermove', (e) => aim((e.clientX / innerWidth - 0.5) * 2, (e.clientY / innerHeight - 0.5) * 2));
+    document.addEventListener('pointerleave', () => aim(0, 0));
+  }
+
+  // Duo photo: sketch the arrows when it scrolls into view
+  const duoFig = document.querySelector<HTMLElement>('.duo');
+  if (duoFig && !calm && 'IntersectionObserver' in window) {
+    duoFig.classList.add('ready');
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        duoFig.classList.add('in');
+        io.disconnect();
+      }
+    }, { threshold: 0.4 });
+    io.observe(duoFig);
+  }
+
+  // Shooting stars: one every 6 to 14 seconds, somewhere in the upper sky.
+  if (sky && !calm) {
+    const shoot = () => {
+      if (!document.hidden) {
+        const s = document.createElement('span');
+        s.className = 'shooting';
+        const leftward = Math.random() < 0.5;
+        const angle = (leftward ? 155 : 25) + (Math.random() * 14 - 7);
+        s.style.left = `${15 + Math.random() * 70}%`;
+        s.style.top = `${4 + Math.random() * 38}%`;
+        sky.append(s);
+        const from = `rotate(${angle}deg) translateX(0)`;
+        const to = `rotate(${angle}deg) translateX(${260 + Math.random() * 140}px)`;
+        s.animate(
+          [
+            { transform: from, opacity: 0 },
+            { opacity: 1, offset: 0.2 },
+            { opacity: 0.9, offset: 0.6 },
+            { transform: to, opacity: 0 },
+          ],
+          { duration: 900 + Math.random() * 400, easing: 'cubic-bezier(0.3, 0, 0.7, 1)' },
+        ).finished.then(() => s.remove());
+      }
+      setTimeout(shoot, 6000 + Math.random() * 8000);
+    };
+    setTimeout(shoot, 4500);
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(56px, 10vw, 120px) 0 clamp(48px, 8vw, 100px);
+  }
+  .hero-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .hero-logo { position: relative; width: min(600px, 100%); }
+  /* Soft moonlight behind the crescent; fades in once the moon is drawn, then breathes */
+  .glow {
+    position: absolute;
+    left: -7%;
+    top: 6%;
+    width: 46%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(234, 234, 234, 0.13), transparent 65%);
+    opacity: 0;
+    translate: calc(var(--mx) * 12px) calc(var(--my) * 9px);
+    animation: glow-in 1.6s ease-out 1.8s forwards, breathe 7s ease-in-out 3.4s infinite;
+    pointer-events: none;
+  }
+  .tagline { font-size: 1.2rem; color: var(--muted); margin: 1.8rem auto 1.6rem; max-width: 32ch; }
+  .tagline, .hero .btn-row { opacity: 0; animation: rise 0.9s ease-out forwards; }
+  .tagline { animation-delay: 3s; }
+  .hero .btn-row { justify-content: center; animation-delay: 3.2s; }
+
+  /* Mouse depth: --mx / --my run from -1 to 1 (set by the script below).
+     The moon sits closest, the name a little behind it, the stars far away
+     and drifting the other way. */
+  .hero { --mx: 0; --my: 0; }
+  .hero-logo :global(.moon-layer) { transform: translate(calc(var(--mx) * 18px), calc(var(--my) * 13px)); }
+  .hero-logo :global(.text-layer) { transform: translate(calc(var(--mx) * 7px), calc(var(--my) * 5px)); }
+
+  /* Twinkling stars */
+  .sky { position: absolute; inset: 0; pointer-events: none; }
+  .sky span {
+    position: absolute;
+    width: var(--z);
+    height: var(--z);
+    border-radius: 50%;
+    background: var(--text);
+    opacity: 0;
+    translate: calc(var(--mx) * var(--k) * -22px) calc(var(--my) * var(--k) * -16px);
+    animation: twinkle var(--t) ease-in-out var(--d) infinite;
+  }
+
+  /* Shooting stars (added now and then by the script) */
+  .sky :global(.shooting) {
+    position: absolute;
+    width: 140px;
+    height: 1.5px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, rgba(234, 234, 234, 0.85));
+    transform-origin: right center;
+    opacity: 0;
+  }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes glow-in { to { opacity: 1; } }
+  @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  @keyframes twinkle { 0%, 100% { opacity: 0.08; } 50% { opacity: 0.6; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tagline, .hero .btn-row, .glow { opacity: 1; }
+    .sky span { opacity: 0.35; }
+  }
+
+  .game-list { display: grid; gap: clamp(3rem, 7vw, 5rem); }
+  .game-card {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: center;
+  }
+  /* Every other game flips sides, so the list reads like a zigzag */
+  .game-card:nth-child(even) { grid-template-columns: 1fr 1.4fr; }
+  .game-card:nth-child(even) .shot { order: 2; }
+  .shot img {
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+  }
+  .info h3 { font-size: clamp(2.2rem, 4vw, 3rem); margin-bottom: 0.6rem; }
+  .info h3 a { color: var(--text); text-decoration: none; }
+  .info h3 a:hover { color: var(--accent-soft); }
+  .small { font-size: 0.92rem; }
+  @media (max-width: 860px) {
+    .game-card, .game-card:nth-child(even) { grid-template-columns: 1fr; }
+    .game-card:nth-child(even) .shot { order: 0; }
+  }
+
+  .about-inner {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: clamp(1.5rem, 5vw, 4rem);
+    align-items: center;
+  }
+  .about-line {
+    margin: 0;
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    font-weight: 500;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  /* Duo photo: 1000 x 1271 layout box, photo starts 260 units down */
+  .duo {
+    position: relative;
+    margin: 0;
+    width: 100%;
+    max-width: 620px;
+    justify-self: center;
+    aspect-ratio: 1000 / 1271;
+    container-type: inline-size;
+  }
+  .duo :global(.duo-photo) {
+    position: absolute;
+    left: 0;
+    top: calc(260 / 1271 * 100%);
+    width: 100%;
+    height: auto;
+    /* soften the edges where the photo is cropped (bottom and sides) */
+    -webkit-mask-image:
+      linear-gradient(to bottom, #000 76%, transparent 99%),
+      linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to bottom, #000 76%, transparent 99%),
+      linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+    mask-composite: intersect;
+  }
+  .arrows { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--accent); overflow: visible; }
+  .label {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+  .label.nian { left: 3%; top: 4%; }
+  .label.eser { right: 1%; top: 1.2%; align-items: flex-end; text-align: right; }
+  .label .who { font-family: var(--font-display); font-size: clamp(2.1rem, 9cqw, 3.1rem); line-height: 1; }
+  .label .role { color: var(--muted); font-size: clamp(0.85rem, 2.8cqw, 1.05rem); margin-top: 0.25rem; }
+
+  /* Arrows sketch in and labels appear when the photo scrolls into view */
+  .duo.ready .arrow path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .duo.ready .label { opacity: 0; transform: translateY(6px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .duo.ready .label.eser { transition-delay: 0.5s; }
+  .duo.in .arrow path { animation: sketch 0.7s ease-out forwards; }
+  .duo.in .arrow path:nth-child(2) { animation-duration: 0.25s; animation-delay: 0.7s; }
+  .duo.in .arrow:nth-child(2) path:nth-child(1) { animation-delay: 0.5s; }
+  .duo.in .arrow:nth-child(2) path:nth-child(2) { animation-delay: 1.2s; }
+  .duo.in .label { opacity: 1; transform: none; }
+  @keyframes sketch { to { stroke-dashoffset: 0; } }
+  @media (max-width: 760px) {
+    .about-inner { grid-template-columns: 1fr; }
+  }
+</style>

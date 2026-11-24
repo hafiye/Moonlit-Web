@@ -1,0 +1,51 @@
+---
+import Lockup from './Lockup.astro';
+import { site } from '../data/site';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="wrap inner">
+    <div class="sign">
+      <a class="logo" href="/" aria-label="Moonlit Studios, home"><Lockup /></a>
+      <p class="muted small">© {year} Moonlit Studios. Made by moonlight.</p>
+    </div>
+    <ul class="links">
+      <li><a href="/games/witchs-binder/">Witch's Binder</a></li>
+      <li><a href="/games/pass-the-collage/">Pass the Collage</a></li>
+      <li><a href="/devlog/">Devlog</a></li>
+      <li><a href="/press/">Press kit</a></li>
+      <li><a href="/rss.xml">RSS</a></li>
+      {site.socials.map((s) => <li><a href={s.url} rel="me noopener" target="_blank">{s.label}</a></li>)}
+      {site.email && <li><a href={`mailto:${site.email}`}>{site.email}</a></li>}
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--line);
+    padding: 40px 0 48px;
+    margin-top: 40px;
+    font-size: 0.95rem;
+  }
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .sign { display: flex; flex-direction: column; align-items: flex-start; gap: 0.7rem; }
+  .logo { display: block; width: 130px; }
+  .small { font-size: 0.85rem; margin: 0; }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.4rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .links a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .links a:hover { color: var(--accent); }
+</style>

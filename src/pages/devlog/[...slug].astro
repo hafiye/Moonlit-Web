@@ -1,0 +1,70 @@
+---
+import { getCollection, render } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import { games } from '../../data/games';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('devlog', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const fmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const game = games.find((g) => g.slug === post.data.game);
+const og = post.data.cover ? await getImage({ src: post.data.cover, width: 1200, format: 'jpg' }) : null;
+---
+<Base title={post.data.title} description={post.data.description} image={og?.src}>
+  <article class="post">
+    <header class="wrap post-head">
+      <a class="back" href="/devlog/">← All devlogs</a>
+      <time datetime={post.data.date.toISOString()}>{fmt.format(post.data.date)}</time>
+      <h1>{post.data.title}</h1>
+      {game && <p class="muted">A devlog about <a href={`/games/${game.slug}/`}>{game.name}</a></p>}
+    </header>
+    <div class="wrap prose">
+      <Content />
+      {post.data.steamUrl && (
+        <p class="also">Also posted on <a href={post.data.steamUrl} target="_blank" rel="noopener">Steam</a>, where you can leave a comment.</p>
+      )}
+    </div>
+  </article>
+</Base>
+
+<style>
+  .post { padding: clamp(40px, 7vw, 88px) 0; }
+  .post-head, .prose { max-width: 760px; }
+  .back { font-size: 0.92rem; color: var(--muted); text-decoration: none; }
+  .back:hover { color: var(--text); }
+  time {
+    display: block;
+    margin: 2rem 0 0.6rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .post-head h1 { font-size: clamp(2.4rem, 5.5vw, 3.6rem); }
+  .post-head { padding-bottom: 1.5rem; margin-bottom: 2rem; border-bottom: 1px solid var(--accent); }
+
+  .prose { font-size: 1.12rem; line-height: 1.75; }
+  .prose :global(img) {
+    width: 100%;
+    height: auto;
+    margin: 2rem 0;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+  .prose :global(h2) { margin-top: 2.5rem; }
+  .prose :global(h3) { margin-top: 2rem; }
+  .prose :global(blockquote) {
+    margin: 1.5rem 0;
+    padding: 0.2rem 0 0.2rem 1.2rem;
+    border-left: 2px solid var(--accent);
+    color: var(--muted);
+  }
+  .prose :global(code) { background: var(--surface); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
+  .prose :global(li::marker) { color: var(--accent); }
+  .also { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 1rem; }
+</style>

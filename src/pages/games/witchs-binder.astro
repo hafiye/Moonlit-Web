@@ -1,0 +1,199 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Gallery from '../../components/Gallery.astro';
+import DevlogList from '../../components/DevlogList.astro';
+import { games } from '../../data/games';
+import parchment from '../../assets/witchs-binder/parchment.jpg';
+
+const game = games.find((g) => g.slug === 'witchs-binder')!;
+const poster = game.trailer ? await getImage({ src: game.trailer.poster, width: 1280, format: 'webp' }) : null;
+const bg = await getImage({ src: parchment, width: 1440, format: 'webp' });
+const posts = (await getCollection('devlog', ({ data }) => !data.draft && data.game === game.slug))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Base title={game.name} description={game.short} image="/press/witchs-binder/screenshot-2.jpg">
+  <section class="parchment" style={`--parchment: url(${bg.src})`}>
+    <div class="wrap parchment-inner">
+      <h1 class="visually-hidden">{game.name}</h1>
+      <Image src={game.title} alt="" widths={[480, 760, 1100]} sizes="(max-width: 760px) 90vw, 680px" class="title-art" loading="eager" />
+      <p class="lede">{game.short}</p>
+      <div class="btn-row center">
+        <a class="btn btn-wine" href={game.steamUrl} target="_blank" rel="noopener">Wishlist on Steam</a>
+        {game.demoUrl && <a class="btn btn-ghost-wine" href={game.demoUrl} target="_blank" rel="noopener">Play the free demo</a>}
+      </div>
+      <p class="facts">{game.status} · {game.platforms.join(', ')}</p>
+    </div>
+  </section>
+
+  {game.trailer && (
+    <section class="trailer" aria-label="Trailer">
+      <div class="wrap">
+        <video controls preload="none" playsinline poster={poster?.src} src={game.trailer.src}>
+          <a href={game.trailer.src}>Download the trailer</a>
+        </video>
+      </div>
+    </section>
+  )}
+
+  <section class="about">
+    <div class="wrap prose-grid">
+      <div class="col">
+        <h2>Forty books, countless scattered pages, and not one where it belongs</h2>
+        <p>
+          The witch only wanted to tidy up her library with a simple spell. Things didn't quite go as planned.
+          Now, the pages of forty different books are scattered across her study floor, and she needs your help
+          to put them back together.
+        </p>
+
+        <h3>Real books, real pages</h3>
+        <p>
+          Every page in Witch's Binder comes from a real historical book in the public domain. Explore an eclectic
+          collection of grimoires and herbals, dream books and star lore, works on alchemy and fortune-telling,
+          folklore, and old tales. Read the pages as you sort them and discover fascinating snippets of history
+          along the way.
+        </p>
+
+        <h3>Sort, read, and bind</h3>
+        <ul>
+          <li>Identify books by their paper, size, borders, ink, and lettering, then gather their pages into separate piles.</li>
+          <li>Look closely: some books have numbered pages, while others challenge you to figure out the correct order yourself.</li>
+          <li>Watch out for burnt corners, water stains, and even little nibble marks!</li>
+          <li>Take a pile to the worktable, put every page in its rightful place, and bind the book by pulling the cloth down its spine.</li>
+          <li>Watch your finished book fly to the bookcase, then arrange your shelves and their little trinkets just the way you like.</li>
+        </ul>
+      </div>
+
+      <aside class="col side">
+        <div class="panel">
+          <h3>A little help from the study</h3>
+          <ul>
+            <li>A magnifying glass helps you examine tiny or faded text.</li>
+            <li>A bubbling cauldron reveals the other pages of a book when you drop one of its pages inside.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>At your own pace</h3>
+          <p>No timers, no scores, and no rush. Just you, a warm hearth, a pile of scattered pages, and all the time you need.</p>
+        </div>
+        <div class="panel">
+          <h3>Play your way</h3>
+          <ul>
+            <li>Play with a mouse, keyboard, or controller.</li>
+            <li>Accessibility options include a larger interface, plain or OpenDyslexic fonts, high contrast, reduced motion, mono audio, and paper and ink colours identified by name.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="shots" aria-labelledby="shots-title">
+    <div class="wrap">
+      <div class="section-head"><h2 id="shots-title">Screenshots</h2></div>
+      <Gallery shots={game.screenshots} />
+    </div>
+  </section>
+
+  <section class="credits" aria-labelledby="credits-title">
+    <div class="wrap credits-inner">
+      <div class="section-head"><h2 id="credits-title">Made by</h2></div>
+      <p class="note">
+        Every illustration is drawn by a game designer who recently decided to go solo. It's her first time
+        drawing for other people's eyes, so she's a little shy about showing them. The music and sound design,
+        meanwhile, are lovingly crafted by her incredibly talented and handsome boyfriend.
+      </p>
+      <dl>
+        <div><dt>Design, art &amp; code</dt><dd>Nian</dd></div>
+        <div><dt>Music &amp; sound design</dt><dd>Emre Akdeniz</dd></div>
+        <div><dt>Voice of the witch</dt><dd>Deniz Polat</dd></div>
+        <div><dt>Testing</dt><dd>Eser Kaya</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  {posts.length > 0 && (
+    <section aria-labelledby="wb-devlog">
+      <div class="wrap">
+        <div class="section-head"><h2 id="wb-devlog">Devlog</h2></div>
+        <DevlogList posts={posts} />
+      </div>
+    </section>
+  )}
+
+  <section class="cta">
+    <div class="wrap cta-inner">
+      <h2>Help the witch tidy up</h2>
+      <p class="muted">Wishlisting on Steam is the best way to support a solo developer.</p>
+      <div class="btn-row center">
+        <a class="btn btn-primary" href={game.steamUrl} target="_blank" rel="noopener">Wishlist on Steam</a>
+        <a class="btn" href="/press/">Press kit</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* The game's own look: parchment, wine-red ink */
+  .parchment {
+    --wine: #8e2a1c;
+    background: #fbeee4 var(--parchment) center / cover no-repeat;
+    color: #4a2a22;
+    padding: clamp(48px, 9vw, 110px) 0 clamp(44px, 7vw, 80px);
+    text-align: center;
+    border-bottom: 1px solid rgba(142, 42, 28, 0.3);
+  }
+  .parchment-inner { display: flex; flex-direction: column; align-items: center; }
+  .title-art { width: min(680px, 90%); height: auto; }
+  .lede { max-width: 58ch; margin: 1.4rem auto 1.8rem; font-size: 1.12rem; font-weight: 400; }
+  .center { justify-content: center; }
+  .btn-wine { background: var(--wine); border-color: var(--wine); color: #fbeee4; }
+  .btn-wine:hover { background: #a33525; border-color: #a33525; color: #fff; }
+  .btn-ghost-wine { border-color: rgba(142, 42, 28, 0.5); color: var(--wine); }
+  .btn-ghost-wine:hover { border-color: var(--wine); color: var(--wine); background: rgba(142, 42, 28, 0.06); }
+  .facts { margin: 1.4rem 0 0; font-size: 0.82rem; letter-spacing: 0.2em; text-transform: uppercase; color: #7b5348; }
+
+  .trailer { padding-bottom: 0; }
+  .trailer video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+
+  .prose-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+  }
+  .col h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); }
+  .col h3 { margin-top: 1.8rem; }
+  .col ul { padding-left: 1.2rem; margin: 0 0 1em; }
+  .col li { margin-bottom: 0.5rem; }
+  .col li::marker { color: var(--accent); }
+  .side { display: grid; gap: 1rem; }
+  .panel {
+    padding: 1.4rem 1.5rem 0.6rem;
+    background: var(--bg-raised);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    border-radius: var(--radius);
+    font-size: 1rem;
+  }
+  .panel h3 { margin-top: 0; font-size: 1.2rem; }
+  @media (max-width: 860px) { .prose-grid { grid-template-columns: 1fr; } }
+
+  .note { max-width: 62ch; color: var(--muted); }
+  dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0 0;
+  }
+  dl div { border-left: 1px solid var(--accent); padding-left: 1rem; }
+  dt { font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  dd { margin: 0.2rem 0 0; font-size: 1.25rem; font-weight: 500; line-height: 1.3; }
+
+  .cta-inner { text-align: center; }
+</style>

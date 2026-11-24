@@ -1,0 +1,14 @@
+---
+// The Moonlit crescent, drawn with currentColor so it follows the text colour.
+import { moonOutline, moonEtchings, moonViewBox } from '../data/moon';
+
+interface Props { class?: string; title?: string }
+const { class: className, title } = Astro.props;
+---
+<svg class={className} style="width:100%;height:auto" viewBox={`0 0 ${moonViewBox.w} ${moonViewBox.h}`} xmlns="http://www.w3.org/2000/svg" role={title ? 'img' : undefined} aria-hidden={title ? undefined : 'true'} fill="none" stroke="currentColor" stroke-linecap="round">
+  {title && <title>{title}</title>}
+  <path d={moonOutline} stroke-width="51" fill-rule="evenodd" />
+  <g stroke-width="18.3">
+    {moonEtchings.map((d) => <path d={d} />)}
+  </g>
+</svg>

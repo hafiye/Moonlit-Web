@@ -1,0 +1,218 @@
+@font-face {
+  font-family: 'Hanging';
+  src: url('/fonts/Hanging.ttf') format('truetype');
+  font-display: swap;
+}
+
+/* Halogen by JLH Fonts, public domain */
+@font-face {
+  font-family: 'Halogen';
+  src: url('/fonts/Halogen.otf') format('opentype');
+  font-display: swap;
+}
+
+:root {
+  /* Brand: #353535 charcoal, #eaeaea moonlight, #e6748e pink accent */
+  --bg: #1d1d1e;
+  --bg-raised: #262627;
+  --surface: #2e2e2f;
+  --charcoal: #353535;
+  --line: rgba(234, 234, 234, 0.12);
+  --line-strong: rgba(234, 234, 234, 0.24);
+  --text: #eaeaea;
+  --muted: #a8a5a2;
+  --accent: #e6748e;
+  --accent-hover: #ec8ba2;
+  --accent-soft: #f9dbe2;
+
+  --font-display: 'Hanging', 'Halogen', system-ui, sans-serif;
+  --font-body: 'Halogen', 'Outfit Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* The logo's "studios" stays in Outfit so it matches the official lockup */
+  --font-logo: 'Outfit Variable', system-ui, sans-serif;
+
+  --wrap: 1120px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --radius: 10px;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  /* A few faint stars and a soft glow where the moon would be */
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgba(234, 234, 234, 0.35), transparent 60%),
+    radial-gradient(1px 1px at 78% 9%, rgba(234, 234, 234, 0.3), transparent 60%),
+    radial-gradient(1.5px 1.5px at 64% 31%, rgba(234, 234, 234, 0.25), transparent 60%),
+    radial-gradient(1px 1px at 33% 42%, rgba(234, 234, 234, 0.2), transparent 60%),
+    radial-gradient(1px 1px at 90% 55%, rgba(234, 234, 234, 0.2), transparent 60%),
+    radial-gradient(900px 600px at 85% -10%, rgba(234, 234, 234, 0.06), transparent 70%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.65;
+  font-weight: 350;
+  overflow-x: hidden;
+}
+
+img,
+video,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: var(--accent-soft);
+  text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+a:hover {
+  color: #fff;
+  text-decoration-color: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Hanging is only for big display text: page titles (h1) and the section
+   headings that sit on the accent rule. Everything smaller uses Halogen,
+   because Hanging gets hard to read at small sizes. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-body);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  margin: 0 0 0.5em;
+  text-wrap: balance;
+}
+h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+}
+h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); }
+h3 { font-size: 1.3rem; }
+
+p { margin: 0 0 1em; text-wrap: pretty; }
+
+.wrap {
+  width: 100%;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.eyebrow::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.muted { color: var(--muted); }
+
+/* Section heading with the brand's thin ember rule */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+.section-head h2 {
+  margin: 0;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+.section-head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.7;
+  transform: translateY(-0.4em);
+}
+.section-head a { white-space: nowrap; font-size: 0.95rem; order: 3; }
+
+section { padding: clamp(56px, 9vw, 104px) 0; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  padding: 0.65rem 1.3rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--text);
+  font: 500 0.98rem/1 var(--font-body);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+.btn:hover { border-color: var(--accent); color: #fff; }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #1d1d1e;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #1d1d1e;
+}
+.btn-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
